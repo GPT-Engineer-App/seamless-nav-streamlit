@@ -1,0 +1,63 @@
+import streamlit as st
+import pandas as pd
+
+# Define the session state variables
+if 'data' not in st.session_state:
+    st.session_state.data = None
+if 'input_values' not in st.session_state:
+    st.session_state.input_values = [''] * 5
+
+# Function to save the uploaded file
+def save_uploaded_file():
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    if uploaded_file is not None:
+        data = pd.read_csv(uploaded_file)
+        st.session_state.data = data
+
+# Function to save the input values
+def save_input_values():
+    input_values = []
+    for i in range(5):
+        value = st.text_input(f"Enter value {i+1}", key=f"input_{i}")
+        input_values.append(value)
+    st.session_state.input_values = input_values
+
+# Page 1: File Upload and Input Fields
+def page1():
+    st.title("Page 1: File Upload and Input Fields")
+    save_uploaded_file()
+    save_input_values()
+    if st.button("Go to Page 2"):
+        st.experimental_set_query_params(page="2")
+
+# Page 2: Table Display
+def page2():
+    st.title("Page 2: Table Display")
+    if st.session_state.data is not None:
+        st.write("Uploaded CSV file:")
+        st.write(st.session_state.data)
+    else:
+        st.write("No CSV file uploaded.")
+    
+    table_data = {
+        'Number': list(range(1, 6)),
+        'Value': st.session_state.input_values
+    }
+    table_df = pd.DataFrame(table_data)
+    st.table(table_df)
+    
+    if st.button("Go back to Page 1"):
+        st.experimental_set_query_params(page="1")
+
+# Main app
+def main():
+    query_params = st.experimental_get_query_params()
+    page = query_params["page"][0] if "page" in query_params else "1"
+    
+    if page == "1":
+        page1()
+    elif page == "2":
+        page2()
+
+if __name__ == "__main__":
+    main()
